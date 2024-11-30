@@ -1,6 +1,7 @@
 package com.example.photodiary
 
 import android.Manifest //Import Manifest to access Permissions
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
@@ -30,6 +31,14 @@ class MainActivity : AppCompatActivity() {
 
         //Call CheckPermission Function
         checkPermissions()
+
+        //FAB Go Function
+        viewBinding.btnCamera.setOnClickListener{
+            val myIntent = Intent(this, CameraActivity::class.java) //Create Intent Variable to open Camera activity
+            startActivity(myIntent) //Do MyIntent
+        }
+
+
     }
 
     // Function to check and request necessary permissions

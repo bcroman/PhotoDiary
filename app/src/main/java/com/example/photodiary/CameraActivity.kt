@@ -17,16 +17,17 @@ import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
 
-    private lateinit var ViewBinding: ActivityCameraBinding //Set ViewBinding Variable
+    private lateinit var viewBinding: ActivityCameraBinding //Set ViewBinding Variable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val ViewBinding = ActivityCameraBinding.inflate(layoutInflater)
-        setContentView(ViewBinding.root)
+        // Initialize viewBinding
+        viewBinding = ActivityCameraBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
 
         //Capture Button to take Photo
-        ViewBinding.fabCapture.setOnClickListener { takePhoto() }
+        viewBinding.fabCapture.setOnClickListener { takePhoto() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -56,7 +57,7 @@ class CameraActivity : AppCompatActivity() {
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(ViewBinding.viewFinder.surfaceProvider)
+                    it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
