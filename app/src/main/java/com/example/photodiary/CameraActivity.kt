@@ -2,8 +2,13 @@ package com.example.photodiary
 
 import android.os.Bundle
 import android.util.Log
+import android.view.ScaleGestureDetector
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraControl
+import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -18,6 +23,11 @@ import java.util.concurrent.Executors
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var viewBinding: ActivityCameraBinding //Set ViewBinding Variable
+    private var isFlashEnabled = false // Track flash state
+    private var isUsingFrontCamera = false // Track the camera state (default is back camera)
+
+    private lateinit var cameraControl: CameraControl // To control zoom
+    private lateinit var cameraInfo: CameraInfo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,9 +36,15 @@ class CameraActivity : AppCompatActivity() {
         viewBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        //Capture Button to take Photo
+        //UI Buttons Actions
         viewBinding.fabCapture.setOnClickListener { takePhoto() }
+        viewBinding.fabViewswitch.setOnClickListener { switchCamera() }
+        viewBinding.fabFlash.setOnClickListener { toggleFlash() }
 
+        //Call PinchZoom Function
+        setupPinchToZoom()
+
+        // Initialize Camera Executor
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         //Call Start Camera
@@ -48,34 +64,140 @@ class CameraActivity : AppCompatActivity() {
     //Function to Take Photo
     private fun takePhoto(){
     }
+
     //Function to open the Camera
-    private fun startCamera(){
+    private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            // Select the camera (front or back)
+            val cameraSelector = if (isUsingFrontCamera) {
+                CameraSelector.DEFAULT_FRONT_CAMERA
+            } else {
+                CameraSelector.DEFAULT_BACK_CAMERA
+            }
+
+            // Create the Preview Use Case
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            // Create the ImageCapture Use Case
+            imageCapture = ImageCapture.Builder()
+                .setFlashMode(
+                    if (isFlashEnabled) ImageCapture.FLASH_MODE_ON
+                    else ImageCapture.FLASH_MODE_OFF
+                )
+                .build()
 
             try {
+                // Unbind all use cases before rebinding
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview)
 
-            } catch(exc: Exception) {
+                // Bind the lifecycle of cameras to the lifecycle owner
+                val camera: Camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, imageCapture
+                )
+
+                // Retrieve CameraControl and CameraInfo for zoom
+                cameraControl = camera.cameraControl
+                cameraInfo = camera.cameraInfo
+
+            } catch (exc: Exception) {
                 Log.e("TAG", "Use case binding failed", exc)
             }
-
         }, ContextCompat.getMainExecutor(this))
     }
+
     // Function to shut down the Camera
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+    }
+
+    //Function to enable flash
+    private fun toggleFlash() {
+        isFlashEnabled = !isFlashEnabled // Toggle flash state
+
+        // Update ImageCapture flash mode
+        imageCapture = ImageCapture.Builder()
+            .setFlashMode(
+                if (isFlashEnabled) ImageCapture.FLASH_MODE_ON
+                else ImageCapture.FLASH_MODE_OFF
+            )
+            .build()
+
+        // Enable or disable torch for live preview
+        if (::cameraControl.isInitialized) {
+            cameraControl.enableTorch(isFlashEnabled)
+        }
+
+        // Optional: Provide user feedback
+        val message = if (isFlashEnabled) "Flash Enabled" else "Flash Disabled"
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    //function to switch camera view
+    private fun switchCamera() {
+        isUsingFrontCamera = !isUsingFrontCamera // Toggle between front and back cameras
+
+        // Reinitialize the camera
+        val cameraSelector = if (isUsingFrontCamera) {
+            CameraSelector.DEFAULT_FRONT_CAMERA
+        } else {
+            CameraSelector.DEFAULT_BACK_CAMERA
+        }
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+
+            try {
+                cameraProvider.unbindAll() // Unbind previous use cases
+
+                val preview = Preview.Builder()
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
+                    }
+
+                // Include the current image capture use case
+                imageCapture = ImageCapture.Builder().build()
+
+                cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, imageCapture
+                )
+            } catch (exc: Exception) {
+                Log.e("TAG", "Camera switch failed", exc)
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun setupPinchToZoom() {
+        val scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                // Get the current zoom ratio
+                val currentZoomRatio = cameraInfo.zoomState.value?.zoomRatio ?: 1f
+
+                // Calculate the new zoom ratio
+                val scaleFactor = detector.scaleFactor
+                val newZoomRatio = currentZoomRatio * scaleFactor
+
+                // Apply the zoom ratio using CameraControl
+                cameraControl.setZoomRatio(newZoomRatio)
+
+                return true
+            }
+        })
+
+        // Attach the gesture detector to the PreviewView
+        viewBinding.viewFinder.setOnTouchListener { _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            true
+        }
     }
 }
