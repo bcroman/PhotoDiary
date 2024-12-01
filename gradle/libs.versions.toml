@@ -28,5 +28,5 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.1.0" }
 
