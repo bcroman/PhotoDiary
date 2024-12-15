@@ -19,10 +19,15 @@
 
     <TextView
         android:id="@+id/tv_dec"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="TextView"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="10dp"
+        android:text="Capture your moments and tell their story with PhotoDiary:&#10;&#10;
+&#8226; 📸 Take stunning photos using advanced camera features like flash toggle, HDR mode, and zoom.&#10;
+&#8226; 📝 Add personal notes to each photo, making every memory meaningful.&#10;
+&#8226; 🗂️ Organize your memories in a gallery and revisit them anytime."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_title" />

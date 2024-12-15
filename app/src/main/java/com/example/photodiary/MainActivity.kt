@@ -42,13 +42,17 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "An error occurred: " + e.message, Toast.LENGTH_SHORT).show()
         }
 
-        //FAB Go Function
+        //FAB Go Function to open Camera Page
         viewBinding.btnCamera.setOnClickListener{
             val myIntent = Intent(this, CameraActivity::class.java) //Create Intent Variable to open Camera activity
-            startActivity(myIntent) //Do MyIntent
+            startActivity(myIntent) //Do MyIntent to open page
         }
 
-
+        //FAB Go Function to open Gallery Page
+        viewBinding.btnGallery.setOnClickListener{
+            val myIntent = Intent(this, GalleryActivity::class.java) //Create Intent Variable to open Gallery activity
+            startActivity(myIntent) //Do MyIntent to open page
+        }
     }
 
     // Function to check and request necessary permissions
