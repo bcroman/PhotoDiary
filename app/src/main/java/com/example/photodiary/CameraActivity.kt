@@ -76,9 +76,9 @@ class CameraActivity : AppCompatActivity() {
             .format(System.currentTimeMillis())
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PhotoDairy")
             }
         }
         val outputOptions = ImageCapture.OutputFileOptions
@@ -100,7 +100,6 @@ class CameraActivity : AppCompatActivity() {
             }
         )
     }
-
 
     //Function to open the Camera
     private fun startCamera() {

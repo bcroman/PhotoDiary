@@ -1,6 +1,5 @@
 package com.example.photodiary
 
-import android.Manifest //Import Manifest to access Permissions
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -31,6 +30,17 @@ class MainActivity : AppCompatActivity() {
 
         //Call CheckPermission Function
         checkPermissions()
+
+        // Create FolderUtils instance
+        val folderUtils = FolderUtils()
+
+        //Try and Create 'PhotoDairy' Folder in Photo folder
+        try {
+            folderUtils.createFolder(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "An error occurred: " + e.message, Toast.LENGTH_SHORT).show()
+        }
 
         //FAB Go Function
         viewBinding.btnCamera.setOnClickListener{
