@@ -9,13 +9,7 @@ import android.view.ScaleGestureDetector
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraControl
-import androidx.camera.core.CameraInfo
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -28,32 +22,30 @@ import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
 
-    private lateinit var viewBinding: ActivityCameraBinding //Set ViewBinding Variable
-    private var isFlashEnabled = false // Track flash state
-    private var isUsingFrontCamera = false // Track the camera state (default is back camera)
+    private lateinit var viewBinding: ActivityCameraBinding
+    private var isFlashEnabled = false
+    private var isUsingFrontCamera = false
 
-    private lateinit var cameraControl: CameraControl // To control zoom
+    private lateinit var cameraControl: CameraControl
     private lateinit var cameraInfo: CameraInfo
+
+    private var imageCapture: ImageCapture? = null
+    private lateinit var cameraExecutor: ExecutorService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Initialize viewBinding
         viewBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        //UI Buttons Actions
         viewBinding.fabCapture.setOnClickListener { takePhoto() }
         viewBinding.fabViewswitch.setOnClickListener { switchCamera() }
         viewBinding.fabFlash.setOnClickListener { toggleFlash() }
 
-        //Call PinchZoom Function
         setupPinchToZoom()
 
-        // Initialize Camera Executor
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        //Call Start Camera
         startCamera()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -63,66 +55,29 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    private var imageCapture: ImageCapture? = null
-
-    private lateinit var cameraExecutor: ExecutorService
-
-    //Function to Take Photo
-    private fun takePhoto(){
-        val imageCapture = imageCapture ?: return
-        val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
-
-        val name = SimpleDateFormat(filenameFormat, Locale.UK)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PhotoDairy")
-            }
-        }
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues)
-            .build()
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Toast.makeText(baseContext, "err1", Toast.LENGTH_LONG).show()
-                }
-                override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 
-    //Function to open the Camera
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val cameraProvider = cameraProviderFuture.get()
 
-            // Select the camera (front or back)
             val cameraSelector = if (isUsingFrontCamera) {
                 CameraSelector.DEFAULT_FRONT_CAMERA
             } else {
                 CameraSelector.DEFAULT_BACK_CAMERA
             }
 
-            // Create the Preview Use Case
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
 
-            // Create the ImageCapture Use Case
             imageCapture = ImageCapture.Builder()
                 .setFlashMode(
                     if (isFlashEnabled) ImageCapture.FLASH_MODE_ON
@@ -131,106 +86,85 @@ class CameraActivity : AppCompatActivity() {
                 .build()
 
             try {
-                // Unbind all use cases before rebinding
                 cameraProvider.unbindAll()
 
-                // Bind the lifecycle of cameras to the lifecycle owner
-                val camera: Camera = cameraProvider.bindToLifecycle(
+                val camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture
                 )
 
-                // Retrieve CameraControl and CameraInfo for zoom
                 cameraControl = camera.cameraControl
                 cameraInfo = camera.cameraInfo
-
             } catch (exc: Exception) {
-                Log.e("TAG", "Use case binding failed", exc)
+                Log.e("CameraActivity", "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    // Function to shut down the Camera
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-    }
+    private fun takePhoto() {
+        val imageCapture = imageCapture ?: return
 
-    //Function to enable flash
-    private fun toggleFlash() {
-        isFlashEnabled = !isFlashEnabled // Toggle flash state
+        val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
+        val name = SimpleDateFormat(filenameFormat, Locale.UK)
+            .format(System.currentTimeMillis())
 
-        // Update ImageCapture flash mode
-        imageCapture = ImageCapture.Builder()
-            .setFlashMode(
-                if (isFlashEnabled) ImageCapture.FLASH_MODE_ON
-                else ImageCapture.FLASH_MODE_OFF
-            )
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PhotoDiary")
+            }
+        }
+
+        val outputOptions = ImageCapture.OutputFileOptions
+            .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
             .build()
 
-        // Enable or disable torch for live preview
-        if (::cameraControl.isInitialized) {
-            cameraControl.enableTorch(isFlashEnabled)
-        }
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    Log.e("CameraActivity", "Photo capture failed: ${exc.message}", exc)
+                    Toast.makeText(baseContext, "Photo capture failed: ${exc.message}", Toast.LENGTH_LONG).show()
+                }
 
-        // Optional: Provide user feedback
-        val message = if (isFlashEnabled) "Flash Enabled" else "Flash Disabled"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    val msg = "Photo capture succeeded: ${output.savedUri}"
+                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
 
-    //function to switch camera view
-    private fun switchCamera() {
-        isUsingFrontCamera = !isUsingFrontCamera // Toggle between front and back cameras
+    private fun toggleFlash() {
+        if (::cameraInfo.isInitialized && cameraInfo.hasFlashUnit()) {
+            isFlashEnabled = !isFlashEnabled
 
-        // Reinitialize the camera
-        val cameraSelector = if (isUsingFrontCamera) {
-            CameraSelector.DEFAULT_FRONT_CAMERA
+            // Restart the camera to apply flash mode changes
+            startCamera()
+
+            val message = if (isFlashEnabled) "Flash Enabled" else "Flash Disabled"
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         } else {
-            CameraSelector.DEFAULT_BACK_CAMERA
+            Toast.makeText(this, "Flash not supported on this device", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-
-            try {
-                cameraProvider.unbindAll() // Unbind previous use cases
-
-                val preview = Preview.Builder()
-                    .build()
-                    .also {
-                        it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
-                    }
-
-                // Include the current image capture use case
-                imageCapture = ImageCapture.Builder().build()
-
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
-                )
-            } catch (exc: Exception) {
-                Log.e("TAG", "Camera switch failed", exc)
-            }
-        }, ContextCompat.getMainExecutor(this))
+    private fun switchCamera() {
+        isUsingFrontCamera = !isUsingFrontCamera
+        startCamera() // Reinitialize the camera with the new camera selector
     }
 
     private fun setupPinchToZoom() {
         val scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
             override fun onScale(detector: ScaleGestureDetector): Boolean {
-                // Get the current zoom ratio
                 val currentZoomRatio = cameraInfo.zoomState.value?.zoomRatio ?: 1f
-
-                // Calculate the new zoom ratio
-                val scaleFactor = detector.scaleFactor
-                val newZoomRatio = currentZoomRatio * scaleFactor
-
-                // Apply the zoom ratio using CameraControl
+                val newZoomRatio = currentZoomRatio * detector.scaleFactor
                 cameraControl.setZoomRatio(newZoomRatio)
-
                 return true
             }
         })
 
-        // Attach the gesture detector to the PreviewView
         viewBinding.viewFinder.setOnTouchListener { _, event ->
             scaleGestureDetector.onTouchEvent(event)
             true
