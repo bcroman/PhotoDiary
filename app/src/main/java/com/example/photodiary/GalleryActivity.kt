@@ -9,8 +9,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.photodiary.R
-import com.example.photodiary.data.Photo
 import com.example.photodiary.databinding.ActivityGalleryBinding
 import com.example.photodiary.viewmodel.PhotoAdapter
 import com.example.photodiary.viewmodel.PhotoViewModel

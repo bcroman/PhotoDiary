@@ -107,47 +107,60 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    //Function to take photo, save img to project folder, save details to database and open preview page
     private fun takePhoto() {
+        // Safeguard: Ensure imageCapture is initialized before proceeding
         val imageCapture = imageCapture ?: return
 
+        // Generate a unique file name using the current timestamp
         val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
         val name = SimpleDateFormat(filenameFormat, Locale.UK)
             .format(System.currentTimeMillis())
 
+        // Prepare content values for saving the image in MediaStore
         val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name) // File name
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/png") // File type
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                // Specify the relative path for saving the image on newer devices (API 29+)
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PhotoDiary")
             }
         }
 
+        // Set up the output options for ImageCapture
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
             .build()
 
+        // Capture the image
         imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
+            outputOptions, // Output configuration
+            ContextCompat.getMainExecutor(this), // Executor to run callbacks on the main thread
             object : ImageCapture.OnImageSavedCallback {
+
+                // Called when there is an error capturing the image
                 override fun onError(exc: ImageCaptureException) {
                     Log.e("CameraActivity", "Photo capture failed: ${exc.message}", exc)
                     Toast.makeText(baseContext, "Photo capture failed: ${exc.message}", Toast.LENGTH_LONG).show()
                 }
 
+                // Called when the image is successfully saved
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    // Retrieve the URI of the saved image
                     val fileUri = output.savedUri
                     val filePath = fileUri?.toString() ?: "Unknown Path"
 
-                    // Save to Room Database
+                    // Prepare a default Photo entity for database insertion
                     val newPhoto = Photo(
-                        filePath = filePath,
-                        title = "New Photo", // Replace with dynamic title if needed
-                        description = "Test Notes: Photo captured at ${name}" // Test notes
+                        filePath = filePath, // Path to the saved image
+                        title = "New Photo", // Default title (user will edit this later)
+                        description = "Test Notes: Photo captured at $name" // Default description
                     )
 
-                    photoViewModel.insert(newPhoto) // Insert into database using ViewModel
+                    // Insert the photo into the database using ViewModel
+                    photoViewModel.insert(newPhoto)
 
+                    // Display a success message
                     val msg = "Photo saved: $filePath"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d("CameraActivity", msg)
@@ -155,6 +168,7 @@ class CameraActivity : AppCompatActivity() {
             }
         )
     }
+
 
     private fun toggleFlash() {
         if (::cameraInfo.isInitialized && cameraInfo.hasFlashUnit()) {
