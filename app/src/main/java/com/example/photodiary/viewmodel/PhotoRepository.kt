@@ -8,8 +8,8 @@ class PhotoRepository(private val photoDao: PhotoDAO) {
 
     val allPhotos: LiveData<List<Photo>> = photoDao.getAllPhotos()
 
-    suspend fun insert(photo: Photo) {
-        photoDao.insertAll(photo)
+    suspend fun insert(photo: Photo): Long {
+        return photoDao.insert(photo)
     }
 
     suspend fun update(photo: Photo) {

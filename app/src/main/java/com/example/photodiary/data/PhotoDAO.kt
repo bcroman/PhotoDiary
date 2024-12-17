@@ -7,7 +7,7 @@ import androidx.room.*
 interface PhotoDAO {
 
     @Insert
-    suspend fun insertAll(vararg photos: Photo)
+    suspend fun insert(photo: Photo): Long
 
     @Query("SELECT * FROM photos")
     fun getAllPhotos(): LiveData<List<Photo>>

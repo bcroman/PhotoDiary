@@ -1,6 +1,7 @@
 package com.example.photodiary
 
 import android.content.ContentValues
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -109,7 +110,6 @@ class CameraActivity : AppCompatActivity() {
 
     //Function to take photo, save img to project folder, save details to database and open preview page
     private fun takePhoto() {
-        // Safeguard: Ensure imageCapture is initialized before proceeding
         val imageCapture = imageCapture ?: return
 
         // Generate a unique file name using the current timestamp
@@ -122,7 +122,6 @@ class CameraActivity : AppCompatActivity() {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name) // File name
             put(MediaStore.MediaColumns.MIME_TYPE, "image/png") // File type
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                // Specify the relative path for saving the image on newer devices (API 29+)
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PhotoDiary")
             }
         }
@@ -134,36 +133,36 @@ class CameraActivity : AppCompatActivity() {
 
         // Capture the image
         imageCapture.takePicture(
-            outputOptions, // Output configuration
-            ContextCompat.getMainExecutor(this), // Executor to run callbacks on the main thread
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
-
-                // Called when there is an error capturing the image
                 override fun onError(exc: ImageCaptureException) {
                     Log.e("CameraActivity", "Photo capture failed: ${exc.message}", exc)
                     Toast.makeText(baseContext, "Photo capture failed: ${exc.message}", Toast.LENGTH_LONG).show()
                 }
 
-                // Called when the image is successfully saved
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    // Retrieve the URI of the saved image
                     val fileUri = output.savedUri
                     val filePath = fileUri?.toString() ?: "Unknown Path"
 
-                    // Prepare a default Photo entity for database insertion
+                    // Create a new Photo entity
                     val newPhoto = Photo(
-                        filePath = filePath, // Path to the saved image
-                        title = "New Photo", // Default title (user will edit this later)
-                        description = "Test Notes: Photo captured at $name" // Default description
+                        filePath = filePath,
+                        title = "New Photo", // Default title
+                        description = "Test Notes: Photo captured at $name"
                     )
 
-                    // Insert the photo into the database using ViewModel
-                    photoViewModel.insert(newPhoto)
+                    // Insert into the database and retrieve the photoID
+                    photoViewModel.insert(newPhoto) { newPhotoID ->
+                        // Start ImagePreviewActivity with the new photoID
+                        val myIntent = Intent(this@CameraActivity, ImagePreviewActivity::class.java).apply {
+                            putExtra("imageUri", filePath) // Pass file path
+                            putExtra("photoID", newPhotoID.toInt()) // Pass the new PhotoID
+                        }
+                        startActivity(myIntent)
+                    }
 
-                    // Display a success message
-                    val msg = "Photo saved: $filePath"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-                    Log.d("CameraActivity", msg)
+                    Toast.makeText(baseContext, "Photo saved successfully!", Toast.LENGTH_SHORT).show()
                 }
             }
         )

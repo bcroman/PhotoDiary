@@ -20,8 +20,11 @@ class PhotoViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Insert photo
-    fun insert(photo: Photo) = viewModelScope.launch {
-        repository.insert(photo)
+    fun insert(photo: Photo, callback: (Long) -> Unit) {
+        viewModelScope.launch {
+            val id = repository.insert(photo)
+            callback(id) // Pass the new ID back to the calling function
+        }
     }
 
     // Update photo
