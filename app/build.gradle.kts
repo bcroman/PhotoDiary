@@ -68,5 +68,9 @@ dependencies {
 
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+    implementation ("androidx.recyclerview:recyclerview:1.3.0")
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    ksp ("com.github.bumptech.glide:compiler:4.15.1")
+
 
 }
