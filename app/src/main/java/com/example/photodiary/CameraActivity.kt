@@ -14,7 +14,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
+import com.example.photodiary.data.Photo
 import com.example.photodiary.databinding.ActivityCameraBinding
+import com.example.photodiary.viewmodel.PhotoViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -32,11 +35,15 @@ class CameraActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
 
+    private lateinit var photoViewModel: PhotoViewModel // ViewModel instance
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         viewBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
+
+        photoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
 
         viewBinding.fabCapture.setOnClickListener { takePhoto() }
         viewBinding.fabViewswitch.setOnClickListener { switchCamera() }
@@ -129,8 +136,21 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
+                    val fileUri = output.savedUri
+                    val filePath = fileUri?.toString() ?: "Unknown Path"
+
+                    // Save to Room Database
+                    val newPhoto = Photo(
+                        filePath = filePath,
+                        title = "New Photo", // Replace with dynamic title if needed
+                        description = "Test Notes: Photo captured at ${name}" // Test notes
+                    )
+
+                    photoViewModel.insert(newPhoto) // Insert into database using ViewModel
+
+                    val msg = "Photo saved: $filePath"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                    Log.d("CameraActivity", msg)
                 }
             }
         )
