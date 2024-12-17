@@ -9,9 +9,9 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.3"
 constraintlayout = "2.2.0"
-cameraCore = "1.4.0"
-cameraLifecycle = "1.4.0"
-cameraView = "1.4.0"
+cameraCore = "1.4.1"
+cameraLifecycle = "1.4.1"
+cameraView = "1.4.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,5 +28,5 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.0.21" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.1.0" }
 
