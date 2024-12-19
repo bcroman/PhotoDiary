@@ -31,3 +31,6 @@ Database Functions:
 
 Optional Features:
 - Use and store photo location
+- Create a Share Button to share image to other people/other apps
+- Create tags for images
+- Sort filters for the gallery page like A-Z or Z-A on title
