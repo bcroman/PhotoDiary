@@ -48,12 +48,24 @@ class ImagePreviewActivity : AppCompatActivity() {
         viewBinding.fabSave.setOnClickListener {
             updatePhoto()
         }
+
+        //Delete button click listener
+        viewBinding.fabDelete.setOnClickListener {
+            // Call deletePhoto function
+            deletePhoto(
+                Photo(
+                    photoID = photoID,
+                    filePath = imageUri,
+                    title = viewBinding.txtTitle.text.toString(),
+                    description = viewBinding.txtDec.text.toString()
+                )
+            )
+        }
     }
 
     private fun updatePhoto() {
         val title = viewBinding.txtTitle.text.toString().trim()
         val description = viewBinding.txtDec.text.toString().trim()
-
 
         if (title.isEmpty() || description.isEmpty()) {
             Toast.makeText(this, "Please enter title and description", Toast.LENGTH_SHORT).show()
@@ -72,6 +84,28 @@ class ImagePreviewActivity : AppCompatActivity() {
         photoViewModel.update(updatedPhoto)
 
         Toast.makeText(this, "Photo updated successfully!", Toast.LENGTH_SHORT).show()
+        finish() // Close the activity
+    }
+
+    //Function to delete image and database record
+    private fun deletePhoto(photo: Photo) {
+        // Delete file from device storage
+        val filePath = photo.filePath
+        if (filePath != null) {
+            val fileUri = Uri.parse(filePath)
+            try {
+                contentResolver.delete(fileUri, null, null) // Deletes the file from MediaStore
+                Toast.makeText(this, "Photo file deleted", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error deleting file: ${e.message}", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+
+        // Delete the photo record from the database
+        photoViewModel.delete(photo)
+        Toast.makeText(this, "Photo deleted successfully!", Toast.LENGTH_SHORT).show()
+
         finish() // Close the activity
     }
 }

@@ -34,7 +34,7 @@ class GalleryActivity : AppCompatActivity() {
 
         // Initialize RecyclerView
         recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = GridLayoutManager(this, 3) // 3 columns for grid
+        recyclerView.layoutManager = GridLayoutManager(this, 2) // 2 columns for grid
         photoAdapter = PhotoAdapter()
         recyclerView.adapter = photoAdapter
 

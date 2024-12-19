@@ -34,7 +34,7 @@ class PhotoViewModel(application: Application) : AndroidViewModel(application) {
 
     // Delete photo
     fun delete(photo: Photo) = viewModelScope.launch {
-        repository.delete(photo)
+        repository.deletePhoto(photo)
     }
 
     // Delete all photos
