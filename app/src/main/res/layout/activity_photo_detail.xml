@@ -52,7 +52,10 @@
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_delete" />
+        app:srcCompat="@android:drawable/ic_menu_delete"
+        app:backgroundTint="#0097B2"
+        app:rippleColor="#004AAD"
+        android:tint="#FFFFFF"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_galleryPage"
@@ -63,6 +66,9 @@
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_gallery" />
+        app:srcCompat="@android:drawable/ic_menu_gallery"
+        app:backgroundTint="#0097B2"
+        app:rippleColor="#004AAD"
+        android:tint="#FFFFFF"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

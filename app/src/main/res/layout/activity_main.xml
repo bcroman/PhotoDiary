@@ -41,7 +41,10 @@
         android:layout_marginBottom="140dp"
         android:text="Camera"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#0097B2"
+        app:rippleColor="#004AAD"/>
 
     <Button
         android:id="@+id/btn_gallery"
@@ -51,6 +54,9 @@
         android:layout_marginBottom="140dp"
         android:text="Gallery"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#0097B2"
+        app:rippleColor="#004AAD"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
