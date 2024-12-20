@@ -1,9 +1,20 @@
 package com.example.photodiary.viewmodel
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import androidx.lifecycle.LiveData
 import com.example.photodiary.data.Photo
 import com.example.photodiary.data.PhotoDAO
 
+/*
+Acts as a bridge between the ViewModel and DAO.
+Contains logic for database operations
+ */
 class PhotoRepository(private val photoDao: PhotoDAO) {
 
     val allPhotos: LiveData<List<Photo>> = photoDao.getAllPhotos()

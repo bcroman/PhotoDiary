@@ -1,5 +1,13 @@
 package com.example.photodiary
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Intent
 import android.os.Build
@@ -24,18 +32,25 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+/*
+Camera activity class
+Handles Start Camera
+Handles TakePhoto Camera
+Handles Zoom Camera
+Handles Switch Zoom Camera
+Handles Toggle Flash Camera
+Handles save to folder and database
+ */
 class CameraActivity : AppCompatActivity() {
 
+    //Set Variables
     private lateinit var viewBinding: ActivityCameraBinding
     private var isFlashEnabled = false
     private var isUsingFrontCamera = false
-
     private lateinit var cameraControl: CameraControl
     private lateinit var cameraInfo: CameraInfo
-
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
-
     private lateinit var photoViewModel: PhotoViewModel // ViewModel instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,14 +61,17 @@ class CameraActivity : AppCompatActivity() {
 
         photoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
 
+        // Set up button click listeners
         viewBinding.fabCapture.setOnClickListener { takePhoto() }
         viewBinding.fabViewswitch.setOnClickListener { switchCamera() }
         viewBinding.fabFlash.setOnClickListener { toggleFlash() }
 
+        // Set up pinch-to-zoom functionality
         setupPinchToZoom()
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
+        cameraExecutor = Executors.newSingleThreadExecutor() // Initialize camera executor
 
+        // Start the camera
         startCamera()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -63,29 +81,34 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    //Lifecycle method to clean up resources when the activity is destroyed
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
     }
 
+    //Starts the camera preview and sets up image capture functionality
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
 
+            // Select the appropriate camera
             val cameraSelector = if (isUsingFrontCamera) {
                 CameraSelector.DEFAULT_FRONT_CAMERA
             } else {
                 CameraSelector.DEFAULT_BACK_CAMERA
             }
 
+            // Set up preview use case
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
 
+            // Set up image capture use case
             imageCapture = ImageCapture.Builder()
                 .setFlashMode(
                     if (isFlashEnabled) ImageCapture.FLASH_MODE_ON
@@ -94,12 +117,15 @@ class CameraActivity : AppCompatActivity() {
                 .build()
 
             try {
+                // Unbind all use cases before rebinding
                 cameraProvider.unbindAll()
 
+                // Bind use cases to the lifecycle
                 val camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture
                 )
 
+                // Initialize camera control and info
                 cameraControl = camera.cameraControl
                 cameraInfo = camera.cameraInfo
             } catch (exc: Exception) {
@@ -108,25 +134,24 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    //Function to take photo, save img to project folder, save details to database and open preview page
+    //Function to take photo, save img (png format) to project folder, save details to database and open preview page
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
-        // Generate a unique file name using the current timestamp
+        // Generate a unique file name
         val filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS"
-        val name = SimpleDateFormat(filenameFormat, Locale.UK)
-            .format(System.currentTimeMillis())
+        val name = SimpleDateFormat(filenameFormat, Locale.UK).format(System.currentTimeMillis())
 
-        // Prepare content values for saving the image in MediaStore
+        // Prepare content values for saving the image
         val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name) // File name
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/png") // File type
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/PhotoDiary")
             }
         }
 
-        // Set up the output options for ImageCapture
+        // Configure output options
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
             .build()
@@ -148,16 +173,15 @@ class CameraActivity : AppCompatActivity() {
                     // Create a new Photo entity
                     val newPhoto = Photo(
                         filePath = filePath,
-                        title = "New Photo", // Default title
+                        title = "New Photo",
                         description = "Test Notes: Photo captured at $name"
                     )
 
-                    // Insert into the database and retrieve the photoID
+                    // Insert into database and retrieve photoID
                     photoViewModel.insert(newPhoto) { newPhotoID ->
-                        // Start ImagePreviewActivity with the new photoID
                         val myIntent = Intent(this@CameraActivity, ImagePreviewActivity::class.java).apply {
-                            putExtra("imageUri", filePath) // Pass file path
-                            putExtra("photoID", newPhotoID.toInt()) // Pass the new PhotoID
+                            putExtra("imageUri", filePath)
+                            putExtra("photoID", newPhotoID.toInt())
                         }
                         startActivity(myIntent)
                     }
@@ -168,7 +192,7 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 
-
+    //Toggles the flash state and restarts the camera to apply changes
     private fun toggleFlash() {
         if (::cameraInfo.isInitialized && cameraInfo.hasFlashUnit()) {
             isFlashEnabled = !isFlashEnabled
@@ -183,11 +207,14 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    //Switches between the front and back cameras views
     private fun switchCamera() {
         isUsingFrontCamera = !isUsingFrontCamera
-        startCamera() // Reinitialize the camera with the new camera selector
+        startCamera()
     }
 
+    //Sets up pinch-to-zoom functionality for the camera
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupPinchToZoom() {
         val scaleGestureDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
             override fun onScale(detector: ScaleGestureDetector): Boolean {

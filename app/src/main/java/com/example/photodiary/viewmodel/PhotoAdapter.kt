@@ -1,5 +1,12 @@
 package com.example.photodiary.viewmodel
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +20,10 @@ import com.example.photodiary.R
 import com.example.photodiary.data.Photo
 import com.bumptech.glide.Glide
 
+/*
+Adapter for the RecyclerView used in the gallery.
+Binds photo data (title, description, and image path) to the UI
+ */
 class PhotoAdapter(private val onItemClick: (Photo) -> Unit) : ListAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PhotoDiffCallback()) {
 
     class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

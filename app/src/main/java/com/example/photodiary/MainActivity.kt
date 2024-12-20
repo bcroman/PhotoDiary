@@ -1,5 +1,12 @@
 package com.example.photodiary
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -12,10 +19,15 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.photodiary.databinding.ActivityMainBinding
 
+/*
+Main activity class, is landing page
+Handles app permissions
+Handles creating 'PhotoDairy' folder
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewBinding: ActivityMainBinding //Set ViewBinding Variable
-    val PERMISSION_REQUEST_CODE: Int = 101 //Set Request Code
+    val PERMISSION_REQUEST_CODE: Int = 101 //Set Permission Request Code
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         //Try and Create 'PhotoDairy' Folder in Photo folder
         try {
             folderUtils.createFolder(this)
-        } catch (e: Exception) {
+        } catch (e: Exception) { //Catch Error Message
             e.printStackTrace()
             Toast.makeText(this, "An error occurred: " + e.message, Toast.LENGTH_SHORT).show()
         }

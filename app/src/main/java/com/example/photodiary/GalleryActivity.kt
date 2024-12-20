@@ -1,5 +1,12 @@
 package com.example.photodiary
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -15,10 +22,14 @@ import com.example.photodiary.databinding.ActivityGalleryBinding
 import com.example.photodiary.viewmodel.PhotoAdapter
 import com.example.photodiary.viewmodel.PhotoViewModel
 
+/*
+Gallery activity class
+Handles image loading
+ */
 class GalleryActivity : AppCompatActivity() {
 
+    //Set Variables
     private lateinit var viewBinding: ActivityGalleryBinding //Set ViewBinding Variable
-
     private val photoViewModel: PhotoViewModel by viewModels()
     private lateinit var recyclerView: RecyclerView
     private lateinit var photoAdapter: PhotoAdapter

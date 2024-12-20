@@ -1,5 +1,12 @@
 package com.example.photodiary.viewmodel
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -8,6 +15,7 @@ import com.example.photodiary.data.Photo
 import com.example.photodiary.data.PhotoDatabase
 import kotlinx.coroutines.launch
 
+//Exposes database operations to the UI layer
 class PhotoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: PhotoRepository
@@ -23,7 +31,7 @@ class PhotoViewModel(application: Application) : AndroidViewModel(application) {
     fun insert(photo: Photo, callback: (Long) -> Unit) {
         viewModelScope.launch {
             val id = repository.insert(photo)
-            callback(id) // Pass the new ID back to the calling function
+            callback(id) // Pass the new ID back
         }
     }
 

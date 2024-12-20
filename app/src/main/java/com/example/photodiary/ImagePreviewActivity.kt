@@ -1,5 +1,12 @@
 package com.example.photodiary
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -11,8 +18,15 @@ import com.example.photodiary.data.Photo
 import com.example.photodiary.databinding.ActivityImagePreviewBinding
 import com.example.photodiary.viewmodel.PhotoViewModel
 
+/*
+Image preview activity class
+Handles image loading and user input
+Handles updating database record
+Handles deleting database record
+ */
 class ImagePreviewActivity : AppCompatActivity() {
 
+    //Set Variables
     private lateinit var viewBinding: ActivityImagePreviewBinding
     private lateinit var photoViewModel: PhotoViewModel
     private var imageUri: String? = null

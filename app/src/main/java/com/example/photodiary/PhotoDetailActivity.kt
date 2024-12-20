@@ -1,5 +1,12 @@
 package com.example.photodiary
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,13 +19,20 @@ import com.example.photodiary.data.Photo
 import com.example.photodiary.databinding.ActivityPhotoDetailBinding
 import com.example.photodiary.viewmodel.PhotoViewModel
 
+/*
+Photo details activity class
+Handles display a enlarge image and details
+Handles delete record and image
+ */
 class PhotoDetailActivity : AppCompatActivity() {
 
+    //Set Variables
     private lateinit var viewBinding: ActivityPhotoDetailBinding
     private lateinit var photoViewModel: PhotoViewModel
     private var photoID: Int = 0
     private var filePath: String? = null
 
+    //Main Function
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

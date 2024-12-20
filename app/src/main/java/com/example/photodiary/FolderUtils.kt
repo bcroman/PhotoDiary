@@ -1,5 +1,12 @@
 package com.example.photodiary
 
+/*
+Author: Ben Collins 21006366
+Date: 20/12/2024
+Version: 1.0
+Project: PhotoDairy
+ */
+
 import android.content.ContentValues
 import android.content.Context
 import android.os.Build
@@ -14,7 +21,6 @@ Handles folder creation:
 - For older Android versions using legacy external storage.
 - Uses App-Specific Storage as a fallback if Scoped Storage fails.
 */
-
 class FolderUtils {
 
     private val folderName = "PhotoDairy"
