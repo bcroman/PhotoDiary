@@ -1,5 +1,6 @@
 package com.example.photodiary
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -9,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.photodiary.data.Photo
 import com.example.photodiary.databinding.ActivityGalleryBinding
 import com.example.photodiary.viewmodel.PhotoAdapter
 import com.example.photodiary.viewmodel.PhotoViewModel
@@ -34,8 +36,10 @@ class GalleryActivity : AppCompatActivity() {
 
         // Initialize RecyclerView
         recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = GridLayoutManager(this, 2) // 2 columns for grid
-        photoAdapter = PhotoAdapter()
+        recyclerView.layoutManager = GridLayoutManager(this, 3) // 3 columns
+        photoAdapter = PhotoAdapter { photo ->
+            onPhotoClick(photo)
+        }
         recyclerView.adapter = photoAdapter
 
         // Observe photos from ViewModel
@@ -44,5 +48,15 @@ class GalleryActivity : AppCompatActivity() {
                 photoAdapter.submitList(it) // Update adapter with new data
             }
         })
+    }
+
+    private fun onPhotoClick(photo: Photo) {
+        val intent = Intent(this, PhotoDetailActivity::class.java).apply {
+            putExtra("photoID", photo.photoID)
+            putExtra("filePath", photo.filePath)
+            putExtra("title", photo.title)
+            putExtra("description", photo.description)
+        }
+        startActivity(intent)
     }
 }

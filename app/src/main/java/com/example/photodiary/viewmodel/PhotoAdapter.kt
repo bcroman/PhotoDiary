@@ -13,7 +13,7 @@ import com.example.photodiary.R
 import com.example.photodiary.data.Photo
 import com.bumptech.glide.Glide
 
-class PhotoAdapter : ListAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PhotoDiffCallback()) {
+class PhotoAdapter(private val onItemClick: (Photo) -> Unit) : ListAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PhotoDiffCallback()) {
 
     class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.imageView)
@@ -34,8 +34,12 @@ class PhotoAdapter : ListAdapter<Photo, PhotoAdapter.PhotoViewHolder>(PhotoDiffC
         // Load image using Glide or similar library
         Glide.with(holder.imageView.context)
             .load(Uri.parse(photo.filePath))
-            //.placeholder(R.drawable.placeholder) // Optional placeholder image
             .into(holder.imageView)
+
+        // Set up click listener for each photo item
+        holder.itemView.setOnClickListener {
+            onItemClick(photo)
+        }
     }
 }
 

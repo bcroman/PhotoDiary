@@ -63,6 +63,7 @@ class ImagePreviewActivity : AppCompatActivity() {
         }
     }
 
+    //Function to update database records
     private fun updatePhoto() {
         val title = viewBinding.txtTitle.text.toString().trim()
         val description = viewBinding.txtDec.text.toString().trim()
