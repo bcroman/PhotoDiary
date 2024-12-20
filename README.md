@@ -34,3 +34,4 @@ Optional Features:
 - Create a Share Button to share image to other people/other apps
 - Create tags for images
 - Sort filters for the gallery page like A-Z or Z-A on title
+- Setting Page for different themes and more
