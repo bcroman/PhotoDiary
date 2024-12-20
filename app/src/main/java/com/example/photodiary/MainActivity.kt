@@ -7,6 +7,7 @@ Version: 1.0
 Project: PhotoDairy
  */
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -17,7 +18,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import com.example.photodiary.databinding.ActivityMainBinding
+import com.example.photodiary.viewmodel.PhotoViewModel
 
 /*
 Main activity class, is landing page
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewBinding: ActivityMainBinding //Set ViewBinding Variable
     val PERMISSION_REQUEST_CODE: Int = 101 //Set Permission Request Code
+    private lateinit var photoViewModel: PhotoViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +42,20 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        photoViewModel = ViewModelProvider(this).get(PhotoViewModel::class.java)
+
+        // Check if this is the first time the app is running
+        val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val isFirstInstall = sharedPreferences.getBoolean("isFirstInstall", true)
+
+        if (isFirstInstall) {
+            // Clear the database
+            photoViewModel.clearDatabase()
+
+            // Update SharedPreferences to mark the first run as completed
+            sharedPreferences.edit().putBoolean("isFirstInstall", false).apply()
         }
 
         //Call CheckPermission Function

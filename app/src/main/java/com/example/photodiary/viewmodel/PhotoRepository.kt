@@ -31,7 +31,7 @@ class PhotoRepository(private val photoDao: PhotoDAO) {
         photoDao.deletePhoto(photo)
     }
 
-    suspend fun deleteAll() {
-        photoDao.deleteAll()
+    suspend fun clearAllPhotos() {
+        photoDao.clearAllPhotos()
     }
 }

@@ -28,5 +28,5 @@ interface PhotoDAO {
     suspend fun deletePhoto(photo: Photo)
 
     @Query("DELETE FROM photos")
-    suspend fun deleteAll()
+    suspend fun clearAllPhotos()
 }
