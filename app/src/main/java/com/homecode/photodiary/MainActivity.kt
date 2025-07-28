@@ -1,5 +1,6 @@
 package com.homecode.photodiary
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
@@ -11,23 +12,30 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.homecode.photodiary.databinding.ActivityMainBinding
 
-private lateinit var binding: ActivityMainBinding //ViewBinding Variable
-const val PERMISSION_REQUEST_CODE: Int = 101 //Set Permission Request Code
+private lateinit var binding: ActivityMainBinding // ViewBinding Variable
+const val PERMISSION_REQUEST_CODE: Int = 101 // Set Permission Request Code
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root) //Set Layout
+        setContentView(binding.root) // Set Layout
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        //Call CheckPermission Function
+        // Call CheckPermission Function
         checkPermissions()
+
+        // Open Camera Activity (Page)
+        binding.btnCamera.setOnClickListener {
+            // Create an Intent to start the CameraActivity
+            val intent = Intent(this, CameraActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     //Function: Check for Permission on RunTime
