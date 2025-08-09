@@ -1,32 +1,25 @@
 package com.homecode.photodiary
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.homecode.photodiary.databinding.ActivityMainBinding
+import com.homecode.photodiary.databinding.ActivityCameraBinding
 
-class MainActivity : AppCompatActivity() {
+class CameraActivity : AppCompatActivity() {
 
-    private lateinit var vBinding: ActivityMainBinding //Set ViewBinding Variable
+    private lateinit var vBinding: ActivityCameraBinding //Set ViewBinding Variable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        vBinding = ActivityMainBinding.inflate(layoutInflater)
+        vBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(vBinding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
-        }
-
-        //Open Camera Activity
-        vBinding.fabCamera.setOnClickListener {
-            val myIntent = Intent(this, CameraActivity::class.java)
-            startActivity(myIntent)
         }
     }
 }
